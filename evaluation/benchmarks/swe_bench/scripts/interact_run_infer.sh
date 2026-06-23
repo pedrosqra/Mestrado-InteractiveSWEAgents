@@ -85,7 +85,7 @@ fi
 
 function run_eval() {
   local eval_note=$1
-  COMMAND="python3 evaluation/benchmarks/swe_bench/interact_run_infer.py \
+  COMMAND="~/.local/bin/poetry run python3 evaluation/benchmarks/swe_bench/interact_run_infer.py \
     --agent-cls $AGENT \
     --llm-config $MODEL_CONFIG \
     --max-iterations $MAX_ITER \

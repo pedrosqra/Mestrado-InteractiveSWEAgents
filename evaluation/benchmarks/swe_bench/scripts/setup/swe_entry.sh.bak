@@ -23,7 +23,8 @@ if [ -z "$SWE_INSTANCE_ID" ]; then
     exit 1
 fi
 
-item=$(jq --arg INSTANCE_ID "$SWE_INSTANCE_ID" '.[] | select(.instance_id == $INSTANCE_ID)' $SWEUTIL_DIR/eval_data/instances/swe-bench-test.json)
+# Read the swe-bench-test-lite.json file and extract the required item based on instance_id
+item=$(jq --arg INSTANCE_ID "$SWE_INSTANCE_ID" '.[] | select(.instance_id == $INSTANCE_ID)' $SWEUTIL_DIR/eval_data/instances/swe-bench-test-lite.json)
 
 if [[ -z "$item" ]]; then
   echo "No item found for the provided instance ID."
@@ -59,7 +60,7 @@ conda activate swe-bench-eval
 
 mkdir -p $SWE_TASK_DIR/reset_testbed_temp
 mkdir -p $SWE_TASK_DIR/reset_testbed_log_dir
-SWE_BENCH_DIR=/swe_util/OD-SWE-bench
+SWE_BENCH_DIR=/swe_util/OH-SWE-bench
 output=$(
     export PYTHONPATH=$SWE_BENCH_DIR && \
     cd $SWE_BENCH_DIR && \

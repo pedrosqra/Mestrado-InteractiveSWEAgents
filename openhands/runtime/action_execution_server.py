@@ -294,12 +294,19 @@ class ActionExecutor:
     async def read(self, action: FileReadAction) -> Observation:
         assert self.bash_session is not None
         if action.impl_source == FileReadSource.OH_ACI:
-            return await self.run_ipython(
-                IPythonRunCellAction(
-                    code=action.translated_ipython_code,
-                    include_extra=False,
+            if 'jupyter' in self.plugins:
+                return await self.run_ipython(
+                    IPythonRunCellAction(
+                        code=action.translated_ipython_code,
+                        include_extra=False,
+                    )
                 )
-            )
+            else:
+                logger.warning(
+                    'OH_ACI file read requested but Jupyter is not available. '
+                    'Falling back to default file read for path: %s',
+                    action.path,
+                )
 
         # NOTE: the client code is running inside the sandbox,
         # so there's no need to check permission

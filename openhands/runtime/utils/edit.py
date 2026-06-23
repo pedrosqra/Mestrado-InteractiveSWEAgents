@@ -210,12 +210,26 @@ class FileEditRuntimeMixin(FileEditRuntimeInterface):
     def edit(self, action: FileEditAction) -> Observation:
         if action.impl_source == FileEditSource.OH_ACI:
             # Translate to ipython command to file_editor
-            return self.run_ipython(
-                IPythonRunCellAction(
-                    code=action.translated_ipython_code,
-                    include_extra=False,
+            try:
+                return self.run_ipython(
+                    IPythonRunCellAction(
+                        code=action.translated_ipython_code,
+                        include_extra=False,
+                    )
                 )
-            )
+            except RuntimeError as e:
+                if 'JupyterRequirement' in str(e):
+                    logger.warning(
+                        'OH_ACI file edit requested but Jupyter is not available. '
+                        'Returning error observation for path: %s',
+                        action.path,
+                    )
+                    return ErrorObservation(
+                        'File editing via str_replace_editor requires Jupyter, '
+                        'which is not available. Please use execute_bash with '
+                        'sed, echo, or other shell commands to edit files instead.'
+                    )
+                raise
 
         obs = self.read(FileReadAction(path=action.path))
         if (

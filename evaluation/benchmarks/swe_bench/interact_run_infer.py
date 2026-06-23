@@ -237,7 +237,7 @@ def get_config(
         )
     )
     agent_config = AgentConfig(
-        codeact_enable_jupyter=False,
+        codeact_enable_jupyter=True,
         codeact_enable_browsing=RUN_WITH_BROWSING,
         codeact_enable_llm_editor=False,
     )
@@ -336,6 +336,12 @@ def initialize_runtime(
         logger.info(obs, extra={'msg_type': 'OBSERVATION'})
         assert obs.exit_code == 0
     else:
+        # inject the fixed swe entry from the host
+        script_dir = os.path.dirname(__file__)
+        runtime.copy_to(
+            str(os.path.join(script_dir, 'scripts/setup/swe_entry.sh')),
+            '/swe_util/',
+        )
         action = CmdRunAction(command='source /swe_util/swe_entry.sh')
         action.timeout = 1800
         logger.info(action, extra={'msg_type': 'ACTION'})
