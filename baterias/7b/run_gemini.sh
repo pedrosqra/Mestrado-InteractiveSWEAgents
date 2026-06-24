@@ -1,31 +1,38 @@
 #!/bin/bash
+export PATH="/root/.local/bin:$PATH"
+export OPENROUTER_API_KEY="${OPENROUTER_API_KEY}"
 cd /root/InteractiveSWEAgents
-export PYTHONPATH="/root/InteractiveSWEAgents:$PYTHONPATH"
 
-# Ativando poetry
-source .venv/bin/activate
+MODELS=("qwen_7b")
+SIMULATORS=("openrouter/google/gemini-3.5-flash")
 
-LLM_CONFIG="qwen_7b"
-SIMULATOR="gemini-flash-latest"
-EXP_NAME="v0.20.0-no-hint-${SIMULATOR}-${LLM_CONFIG}-run_1"
+(
+  while true; do
+    sleep 600
+    DISK_USAGE=$(df / | tail -1 | awk "{print \$5}" | sed "s/%//")
+    if [ "$DISK_USAGE" -gt 80 ]; then
+        # Mantendo apenas container prune para não apagar as imagens base (que corrompe o SWE-Bench)
+        docker container prune -f > /dev/null 2>&1
+    fi
+  done
+) &
+CLEANER_PID=$!
+trap "kill $CLEANER_PID" EXIT
 
-# Forçar salvamento na pasta organizada RQ3_run
-export EVAL_OUTPUT_DIR="evaluation/evaluation_outputs/RQ3_run/${SIMULATOR}/${LLM_CONFIG}"
-mkdir -p "$EVAL_OUTPUT_DIR"
-
-echo "=========================================================================="
-echo "🚀 INICIANDO BATERIA COM SIMULADOR: ${SIMULATOR} E MODELO: ${LLM_CONFIG}"
-echo "=========================================================================="
-
-nohup python evaluation/benchmarks/swe_bench/interact_run_infer.py \
-  --agent-cls CodeActAgent \
-  --llm-config "$LLM_CONFIG" \
-  --max-iterations 5 \
-  --eval-num-workers 1 \
-  --eval-note "$EXP_NAME" \
-  --dataset princeton-nlp/SWE-bench_Lite \
-  --split test \
-  --eval-n-limit 30 \
-  --simulator_model "$SIMULATOR" > "rq3_${LLM_CONFIG}_${SIMULATOR}_evaluation.log" 2>&1 &
-
-echo "Experimento iniciado em background! Logs em rq3_${LLM_CONFIG}_${SIMULATOR}_evaluation.log"
+for MODEL in "${MODELS[@]}"; do
+    for SIMULATOR in "${SIMULATORS[@]}"; do
+        # Nome da rodada limpo (sem as barras do openrouter para não dar erro no Linux)
+        EXP_NOTE="v0.20.0-no-hint-gemini-3.5-flash-7B-run_1"
+        
+        poetry run python evaluation/benchmarks/swe_bench/interact_run_infer.py \
+          --agent-cls CodeActAgent \
+          --llm-config $MODEL \
+          --max-iterations 5 \
+          --eval-num-workers 1 \
+          --eval-note $EXP_NOTE \
+          --dataset princeton-nlp/SWE-bench_Lite \
+          --split test \
+          --simulator_model $SIMULATOR
+          
+    done
+done
