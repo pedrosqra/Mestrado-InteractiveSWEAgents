@@ -1,3 +1,16 @@
+## Sobre este repositório: Reprodução e Extensão da RQ3 (PPGCC/UFCG)
+
+Este repositório deriva do [projeto original](https://github.com/sani903/InteractiveSWEAgents),
+descrito abaixo, e o estende com a reprodução
+parcial e extensão da RQ3 do benchmark (qualidade das perguntas de clarificação),
+aplicada à família open-weight Qwen2.5 Coder (1.5B, 7B, 14B e 32B) sob dois
+simuladores de usuário (GPT-4o-mini e Gemini 3.5 Flash).
+
+- Documentação, dados processados e scripts: [reproducao/README.md](reproducao/README.md)
+- Suíte de validação: [validation/](validation/)
+- Logs brutos das 240 execuções: [DOI 10.5281/zenodo.21211716](https://doi.org/10.5281/zenodo.21211716)
+
+---
 
 # Interactive Agents To Overcome Ambiguity in Software Engineering
 
