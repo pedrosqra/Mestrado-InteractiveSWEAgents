@@ -1,0 +1,122 @@
+[
+  {
+    "instance_id": "astropy__astropy-14309",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-11099",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-12125",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-12193",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-12209",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-12325",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-13112",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-13315",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-13807",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-13837",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-14559",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-15572",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "django__django-16100",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "mwaskom__seaborn-3069",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "pylint-dev__pylint-6903",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "pytest-dev__pytest-7490",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "scikit-learn__scikit-learn-14141",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "scikit-learn__scikit-learn-14983",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "scikit-learn__scikit-learn-15100",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-10449",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-10466",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-7454",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-7910",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-8120",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-9281",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sphinx-doc__sphinx-9320",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sympy__sympy-17318",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sympy__sympy-19637",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sympy__sympy-23262",
+    "qa_pairs": []
+  },
+  {
+    "instance_id": "sympy__sympy-24213",
+    "qa_pairs": []
+  }
+]

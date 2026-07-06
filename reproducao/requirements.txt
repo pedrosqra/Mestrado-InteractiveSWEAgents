@@ -1,0 +1,16 @@
+# Núcleo de análise estatística e manipulação de dados
+pandas
+numpy
+scipy
+statsmodels
+scikit-learn
+
+# Geração de figuras
+matplotlib
+seaborn
+
+# Pipeline de LLM (extração de Q&A, juiz GPT-4o, simuladores)
+litellm
+
+# Opcional: upload de visualizações para o Zeno
+# zeno-client
