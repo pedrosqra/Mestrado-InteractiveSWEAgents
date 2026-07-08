@@ -42,7 +42,11 @@ Este ambiente foi projetado e testado principalmente para rodar em **Ubuntu/Debi
 ### Passo 1: Instalar as dependências do sistema
 ```bash
 sudo apt update
-sudo apt install -y build-essential python3-pip python3.12-venv netcat-openbsd curl nodejs npm
+sudo apt install -y build-essential python3-pip python3.12-venv netcat-openbsd curl
+
+# Instalar Node.js 20.x (requisito do OpenHands)
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
 ```
 
 ### Passo 2: Instalar o Docker
@@ -58,20 +62,25 @@ sudo systemctl enable --now docker
 ### Passo 3: Instalar o Poetry e Fazer o Build
 ```bash
 curl -sSL https://install.python-poetry.org | python3 -
+echo 'export PATH="/root/.local/bin:$PATH"' >> ~/.bashrc
 export PATH="/root/.local/bin:$PATH"
 
 # Instala as dependências Python e faz o build do orquestrador (OpenHands)
 make build
+poetry install
 pip install -r requirements.txt
+
+# Cria o arquivo de configuração necessário para o OpenHands
+cp config.template.toml config.toml
 ```
 
 
 ## Como reproduzir
 
 ### Passo 4: Amostragem
-Gere a amostra das 30 issues originais:
+Gere a amostra das 30 issues originais (e o arquivo de filtro para o OpenHands):
 ```bash
-python3 scripts/generate_sample.py
+poetry run python3 scripts/generate_sample.py
 ```
 *Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.*
 
@@ -80,6 +89,11 @@ Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (rec
    
 **A) Para replicação estrita do experimento original:**
 Você precisará de uma infraestrutura equivalente: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI), e acesso ao OpenRouter para o modelo 32B.
+Como o simulador original usou a API oficial do Google AI Studio (`gemini-flash-latest`), você precisará exportar a chave do Google no Droplet:
+```bash
+export GEMINI_API_KEY="sua_chave_do_google_ai_studio"
+bash reproducao/baterias/14b/run_rq3_gemini.sh
+```
 
 **B) Para testar a pipeline via OpenRouter (Caminho mais fácil):**
 É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API centralizadas. Como o orquestrador usa o LiteLLM, basta alterar as variáveis `MODELS` e `SIMULATORS` no topo dos scripts `.sh` informando o prefixo do provedor.
@@ -91,7 +105,34 @@ SIMULATORS=("openrouter/google/gemini-3.5-flash")
 E exporte sua chave do OpenRouter no terminal antes de executar o script:
 ```bash
 export OPENROUTER_API_KEY="sua_chave"
+bash reproducao/baterias/14b/run_rq3_gemini.sh
 ```
+
+### Alternativa: Modelos Locais via MLX e Ngrok (Apple Silicon)
+Para reproduzir a infraestrutura exata do experimento (rodando o agente no Droplet e o LLM Qwen localmente em um Mac com chip M1/M2/M3):
+
+1. **No seu Mac**, instale o MLX e inicie o servidor do modelo desejado:
+   ```bash
+   pip3 install mlx-lm
+   # Nota: Se trocar o tamanho do modelo (ex: para 1.5B ou 7B), lembre-se de manter
+   # o sufixo de quantização no nome (como -4bit ou -bf16) exigido pelo mlx-community
+   python3 -m mlx_lm.server --model mlx-community/Qwen2.5-Coder-14B-Instruct-4bit --host 0.0.0.0 --port 8080
+   ```
+2. **No seu Mac**, exponha o servidor para a internet usando o Ngrok:
+   ```bash
+   ngrok http 8080
+   ```
+3. **No Droplet**, configure o `config.toml` (criado no Passo 1) apontando para o URL gerado pelo Ngrok e usando o prefixo `openai/` para compatibilidade com a API:
+   ```toml
+   [llm.qwen_14b]
+   model = "openai/mlx-community/Qwen2.5-Coder-14B-Instruct-4bit"
+   base_url = "https://SEU-URL.ngrok-free.app/v1"
+   api_key = "sk-1234" # API Key fictícia necessária para a biblioteca
+   ```
+4. Execute o script da bateria no Droplet (o modelo apontará para o seu Mac automaticamente):
+   ```bash
+   bash reproducao/baterias/14b/run_rq3_gemini.sh
+   ```
 3. **Métricas.** Os dados processados ficam em `experiments/`:
    `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/`
    (Judge e experimento de swap).
@@ -157,3 +198,21 @@ usado versões ligeiramente diferentes.
 Inferência local dos modelos Qwen em um Apple MacBook Air (Apple Silicon) via
 `mlx_lm`, exposto ao orquestrador por túnel Ngrok em endpoint compatível com a
 OpenAI API. Cada issue foi resolvida em um contêiner Docker do SWE-Bench.
+
+## Solução de Problemas Comuns (Troubleshooting)
+
+- **`ModuleNotFoundError: No module named 'litellm'` ao rodar baterias**
+  - **Causa:** O script não está encontrando as dependências do OpenHands, o que significa que o ambiente virtual não foi instalado/sincronizado.
+  - **Solução:** Na raiz do projeto, rode `poetry install` e tente rodar o script novamente.
+
+- **`KeyError: 'PASS_TO_PASS'` na linha 644 do interact_run_infer.py**
+  - **Causa:** O script Python do OpenHands tentou carregar a amostra bruta de 30 instâncias em vez do Dataset completo, por não encontrar o arquivo de filtro de IDs na configuração.
+  - **Solução:** Certifique-se de executar o Passo 4 (`poetry run python3 scripts/generate_sample.py`) **antes** das baterias. Esse script cria automaticamente o arquivo `evaluation/benchmarks/swe_bench/config.toml` necessário.
+
+- **`make build` falhando no `check-nodejs` com `Error 1` ou `Error 2`**
+  - **Causa:** A versão do Node.js nos repositórios padrão do Ubuntu (apt) pode ser antiga (ex: v18), e o OpenHands exige Node >= 20.x.
+  - **Solução:** Revise o Passo 1 do tutorial e certifique-se de executar o download do NodeSource (`curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -`) antes do `apt install nodejs`.
+
+- **`Repository Not Found` ao tentar baixar o Qwen na mlx-community**
+  - **Causa:** Repositórios locais da mlx-community exigem que a formatação da quantização (ex: `-4bit`, `-bf16`) seja incluída na flag `--model`.
+  - **Solução:** Adicione o sufixo apropriado. Exemplo correto: `--model mlx-community/Qwen2.5-Coder-1.5B-Instruct-4bit`.

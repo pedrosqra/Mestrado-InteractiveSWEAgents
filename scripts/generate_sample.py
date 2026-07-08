@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import toml
 
 # Configuração de caminhos baseada na estrutura do repositório
 input_path = 'data/underspecified.csv'
@@ -25,6 +26,13 @@ def generate_fixed_sample():
     
     # 3. Salva o arquivo que será o input oficial do loop de 240 rodadas
     sample_df.to_csv(output_path, index=False)
+    
+    # 4. Gera o arquivo de configuração de filtro (config.toml) para o SWE-bench
+    # O script do OpenHands espera que os IDs estejam em evaluation/benchmarks/swe_bench/config.toml
+    config_path = 'evaluation/benchmarks/swe_bench/config.toml'
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    with open(config_path, 'w') as f:
+        toml.dump({'selected_ids': sample_df['instance_id'].tolist()}, f)
     
     print("-" * 50)
     print(f"✅ Amostra de 30 instâncias gerada com sucesso!")
