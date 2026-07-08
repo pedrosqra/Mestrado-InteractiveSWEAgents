@@ -26,22 +26,23 @@ def run_wilcoxon(file1, file2, col_name, expected_p, name):
 
 def main():
     print("=== Script 4: Validate Wilcoxon Scale ===")
-    base_dir = ".." if os.path.exists("../experiments") else "."
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(script_dir, "..")
     
     # Cosine distance
-    gpt_7b = os.path.join(base_dir, "experiments/cosine_distance/qwen_7b_gpt_embedding_results.csv")
-    gpt_14b = os.path.join(base_dir, "experiments/cosine_distance/qwen_14b_gpt_embedding_results.csv")
-    gemini_7b = os.path.join(base_dir, "experiments/cosine_distance/qwen_7b_gemini_embedding_results.csv")
-    gemini_14b = os.path.join(base_dir, "experiments/cosine_distance/qwen_14b_gemini_embedding_results.csv")
+    gpt_7b = os.path.join(base_dir, "reproducao/experiments/cosine_distance/qwen_7b_gpt_embedding_results.csv")
+    gpt_14b = os.path.join(base_dir, "reproducao/experiments/cosine_distance/qwen_14b_gpt_embedding_results.csv")
+    gemini_7b = os.path.join(base_dir, "reproducao/experiments/cosine_distance/qwen_7b_gemini_embedding_results.csv")
+    gemini_14b = os.path.join(base_dir, "reproducao/experiments/cosine_distance/qwen_14b_gemini_embedding_results.csv")
     
     run_wilcoxon(gpt_7b, gpt_14b, "difference_score", 0.175, "Scale (7B vs 14B) - GPT-mini")
     run_wilcoxon(gemini_7b, gemini_14b, "difference_score", 0.044, "Scale (7B vs 14B) - Gemini Flash")
     
     # LLM Judge
-    judge_gpt_7b = os.path.join(base_dir, "experiments/llm_as_judge/qwen_7b_gpt_gpt4o_evaluation_results.csv")
-    judge_gpt_14b = os.path.join(base_dir, "experiments/llm_as_judge/qwen_14b_gpt_gpt4o_evaluation_results.csv")
-    judge_gemini_7b = os.path.join(base_dir, "experiments/llm_as_judge/qwen_7b_gemini_gpt4o_evaluation_results.csv")
-    judge_gemini_14b = os.path.join(base_dir, "experiments/llm_as_judge/qwen_14b_gemini_gpt4o_evaluation_results.csv")
+    judge_gpt_7b = os.path.join(base_dir, "reproducao/experiments/llm_as_judge/qwen_7b_gpt_gpt4o_evaluation_results.csv")
+    judge_gpt_14b = os.path.join(base_dir, "reproducao/experiments/llm_as_judge/qwen_14b_gpt_gpt4o_evaluation_results.csv")
+    judge_gemini_7b = os.path.join(base_dir, "reproducao/experiments/llm_as_judge/qwen_7b_gemini_gpt4o_evaluation_results.csv")
+    judge_gemini_14b = os.path.join(base_dir, "reproducao/experiments/llm_as_judge/qwen_14b_gemini_gpt4o_evaluation_results.csv")
 
     run_wilcoxon(judge_gpt_7b, judge_gpt_14b, "new_information_score", 0.012, "Judge Scale (7B vs 14B) - GPT-mini")
     run_wilcoxon(judge_gemini_7b, judge_gemini_14b, "new_information_score", 0.003, "Judge Scale (7B vs 14B) - Gemini Flash")

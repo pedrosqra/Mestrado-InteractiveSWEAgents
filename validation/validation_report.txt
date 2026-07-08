@@ -41,10 +41,10 @@ PASS: 32b p-value 2.08e-05 < 0.0001 (expected ~2.07e-05)
 
 --- Running validate_wilcoxon_scale.py ---
 === Script 4: Validate Wilcoxon Scale ===
-PASS: Scale (7B vs 14B) - GPT-mini | p=0.349 (expected ~0.349) | Significant? False
-PASS: Scale (7B vs 14B) - Gemini Flash | p=0.088 (expected ~0.087) | Significant? False
-PASS: Judge Scale (7B vs 14B) - GPT-mini | p=0.024 (expected ~0.024) | Significant? True
-PASS: Judge Scale (7B vs 14B) - Gemini Flash | p=0.007 (expected ~0.006) | Significant? True
+PASS: Scale (7B vs 14B) - GPT-mini | p=0.175 (expected ~0.175) | Significant? False
+PASS: Scale (7B vs 14B) - Gemini Flash | p=0.044 (expected ~0.044) | Significant? True
+PASS: Judge Scale (7B vs 14B) - GPT-mini | p=0.012 (expected ~0.012) | Significant? True
+PASS: Judge Scale (7B vs 14B) - Gemini Flash | p=0.003 (expected ~0.003) | Significant? True
 
 --- Running validate_mcnemar_1_5b.py ---
 === Script 5: Validate McNemar 1.5B ===

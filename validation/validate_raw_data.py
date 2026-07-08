@@ -9,9 +9,8 @@ def check_file_exists(filepath):
 
 def main():
     print("=== Script 1: Validate Raw Data ===")
-    base_dir = ".." # Assuming script is run from /validation
-    if not os.path.exists("../data/sample_30_underspecified.csv"):
-        base_dir = "." # If run from root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(script_dir, "..")
 
     sample_file = os.path.join(base_dir, "data/sample_30_underspecified.csv")
     if not check_file_exists(sample_file):
@@ -33,7 +32,7 @@ def main():
     ]
 
     for battery in batteries:
-        csv_file = os.path.join(base_dir, f"experiments/cosine_distance/{battery}_embedding_results.csv")
+        csv_file = os.path.join(base_dir, f"reproducao/experiments/cosine_distance/{battery}_embedding_results.csv")
         if not check_file_exists(csv_file):
             continue
             

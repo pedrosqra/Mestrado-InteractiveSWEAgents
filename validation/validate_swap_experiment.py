@@ -4,9 +4,10 @@ from scipy.stats import wilcoxon
 
 def main():
     print("=== Script 6: Validate Swap Experiment ===")
-    base_dir = ".." if os.path.exists("../experiments") else "."
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(script_dir, "..")
     
-    swap_file = os.path.join(base_dir, "experiments/llm_as_judge/llm_judge_swap_results.csv")
+    swap_file = os.path.join(base_dir, "reproducao/experiments/llm_as_judge/llm_judge_swap_results.csv")
     if not os.path.exists(swap_file):
         print(f"FAIL: {swap_file} not found")
         return

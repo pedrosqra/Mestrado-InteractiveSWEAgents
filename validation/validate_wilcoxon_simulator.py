@@ -4,7 +4,8 @@ from scipy.stats import wilcoxon
 
 def main():
     print("=== Script 3: Validate Wilcoxon Simulator ===")
-    base_dir = ".." if os.path.exists("../experiments") else "."
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(script_dir, "..")
     
     expected_p = {
         "7b": 1.06e-5,
@@ -14,8 +15,8 @@ def main():
 
     sizes = ["7b", "14b", "32b"]
     for size in sizes:
-        gpt_file = os.path.join(base_dir, f"experiments/cosine_distance/qwen_{size}_gpt_embedding_results.csv")
-        gemini_file = os.path.join(base_dir, f"experiments/cosine_distance/qwen_{size}_gemini_embedding_results.csv")
+        gpt_file = os.path.join(base_dir, f"reproducao/experiments/cosine_distance/qwen_{size}_gpt_embedding_results.csv")
+        gemini_file = os.path.join(base_dir, f"reproducao/experiments/cosine_distance/qwen_{size}_gemini_embedding_results.csv")
         
         df_gpt = pd.read_csv(gpt_file).groupby('instance_id')['difference_score'].mean().reset_index()
         df_gemini = pd.read_csv(gemini_file).groupby('instance_id')['difference_score'].mean().reset_index()

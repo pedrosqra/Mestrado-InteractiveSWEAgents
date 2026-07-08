@@ -11,16 +11,19 @@ def main():
         "validate_mcnemar_1_5b.py",
         "validate_swap_experiment.py"
     ]
+    script_dir = os.path.dirname(os.path.abspath(__file__))
     
     total_passes = 0
     total_fails = 0
     
-    with open("validation_report.txt", "w") as f:
+    report_path = os.path.join(script_dir, "validation_report.txt")
+    with open(report_path, "w") as f:
         f.write("=== Validation Report ===\n\n")
         
         for script in scripts:
-            if not os.path.exists(script):
-                msg = f"ERROR: Script {script} not found.\n"
+            script_path = os.path.join(script_dir, script)
+            if not os.path.exists(script_path):
+                msg = f"ERROR: Script {script_path} not found.\n"
                 print(msg)
                 f.write(msg)
                 continue
@@ -28,7 +31,7 @@ def main():
             print(f"Running {script}...")
             f.write(f"--- Running {script} ---\n")
             
-            result = subprocess.run([sys.executable, script], capture_output=True, text=True)
+            result = subprocess.run([sys.executable, script_path], capture_output=True, text=True)
             output = result.stdout
             if result.stderr:
                 output += "\n[STDERR]\n" + result.stderr

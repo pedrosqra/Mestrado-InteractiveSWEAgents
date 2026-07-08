@@ -1,16 +1,31 @@
-# Núcleo de análise estatística e manipulação de dados
-pandas
-numpy
-scipy
-statsmodels
-scikit-learn
+# Requisitos dos scripts de analise desta pasta (experiments/, verify_all_numbers.py).
+#
+# Versoes recuperadas do poetry.lock do OpenHands 0.20.0 (raiz do repositorio), que
+# foi o ambiente em que o experimento foi executado. O droplet DigitalOcean de
+# execucao foi destruido, entao estas sao a melhor referencia disponivel.
+#
+# Ressalva de ambiente: o experimento (OpenHands) rodou em Python 3.12; os scripts
+# de analise deste diretorio rodaram em Python 3.10 (cache .pyc), portanto as versoes
+# abaixo podem diferir levemente das usadas na analise. Ver README, secao
+# "Versoes e ambiente", para a reconstrucao completa (modelos, temperaturas, infra).
 
-# Geração de figuras
-matplotlib
-seaborn
+# Analise estatistica e manipulacao de dados
+pandas==3.0.3
+numpy==2.4.6
+scipy==1.18.0
+scikit-learn==1.9.0
 
-# Pipeline de LLM (extração de Q&A, juiz GPT-4o, simuladores)
-litellm
+# Geracao de figuras
+matplotlib==3.11.0
+seaborn==0.13.2
 
-# Opcional: upload de visualizações para o Zeno
-# zeno-client
+# Pipeline de LLM (extracao de Q&A, juiz GPT-4o, embeddings, simuladores)
+litellm==1.83.0
+# openai==2.43.0    # cliente usado indiretamente via litellm
+# tiktoken==0.13.0  # contagem de tokens, transitivo
+
+# statsmodels foi usado apenas pela analise de regressao de sensibilidade, removida
+# da versao final do artigo. Nao e dependencia do OpenHands, entao a versao exata
+# nao foi recuperada. Reinstale (pip install statsmodels) apenas se for reexecutar
+# aquela analise em experiments/statistical_analysis/.
+# statsmodels

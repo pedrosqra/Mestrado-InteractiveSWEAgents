@@ -4,7 +4,8 @@ import numpy as np
 
 def main():
     print("=== Script 2: Validate Aggregation ===")
-    base_dir = ".." if os.path.exists("../experiments") else "."
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.join(script_dir, "..")
     
     expected_ig = {
         "qwen_7b_gpt": 0.0794,
@@ -16,7 +17,7 @@ def main():
     }
 
     for battery, expected in expected_ig.items():
-        csv_file = os.path.join(base_dir, f"experiments/cosine_distance/{battery}_embedding_results.csv")
+        csv_file = os.path.join(base_dir, f"reproducao/experiments/cosine_distance/{battery}_embedding_results.csv")
         if not os.path.exists(csv_file):
             print(f"FAIL: File not found: {csv_file}")
             continue

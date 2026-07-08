@@ -63,3 +63,54 @@ pip install -r requirements.txt
    ```bash
    python3 ../validation/run_all_validations.py
    ```
+
+## Versões e ambiente (reprodutibilidade)
+
+O droplet DigitalOcean usado na execução foi destruído após o experimento. As
+versões abaixo foram reconstruídas a partir de artefatos do próprio repositório:
+o `poetry.lock` do OpenHands (raiz do repo), os campos `metadata`/`llm_config`
+de cada `output.jsonl` em `FINAIS/` e os caches `.pyc`.
+
+**Ambiente de execução (OpenHands), rodado em ~2026-06-23.**
+
+| Componente | Valor |
+|---|---|
+| OpenHands | `openhands-ai` 0.20.0, commit `68be32fcd0fb98671f998ecee073d9b38dc4a20c` |
+| Python (execução) | 3.12 (`pyproject.toml`: `python = "^3.12"`) |
+| Agente | `CodeActAgent`, `max_iterations=5`, `temperature=0.0`, `top_p=1.0` |
+| litellm / openai / tiktoken | 1.83.0 / 2.43.0 / 0.13.0 |
+| docker / datasets / pydantic | 7.1.0 / 3.0.1 / 2.13.4 |
+
+**Modelos do agente** (todos com `temperature=0.0`):
+
+| Escala | Identificador | Regime |
+|---|---|---|
+| 1.5B | `openai/Qwen/Qwen2.5-Coder-1.5B-Instruct` | local, 16-bit |
+| 7B | `openai/mlx-community/Qwen2.5-Coder-7B-Instruct-4bit` | local, MLX 4-bit |
+| 14B | `openai/mlx-community/Qwen2.5-Coder-14B-Instruct-4bit` | local, MLX 4-bit |
+| 32B | `openrouter/qwen/qwen-2.5-coder-32b-instruct` | API (OpenRouter) |
+
+**Simuladores, juiz e embeddings:**
+
+| Papel | Modelo |
+|---|---|
+| Simulador GPT-mini | `gpt-4o-mini` |
+| Simulador Gemini (1.5B/7B/14B) | `gemini-flash-latest` |
+| Simulador Gemini (32B) | `openrouter/google/gemini-3.5-flash` |
+| Juiz | `gpt-4o` |
+| Embeddings (IG) | `text-embedding-3-small` |
+
+> **Aviso de reprodutibilidade:** `gemini-flash-latest` é uma tag móvel. A
+> execução ocorreu em junho de 2026, portanto corresponde ao Gemini Flash
+> vigente nessa data. Para reexecução fiel, fixe um snapshot específico.
+
+**Ambiente de análise** (scripts deste diretório): Python 3.10 (cache `.pyc`),
+separado do ambiente 3.12 do OpenHands. As versões em `requirements.txt` vêm do
+`poetry.lock` do OpenHands e servem de referência; o ambiente 3.10 pode ter
+usado versões ligeiramente diferentes.
+
+**Infraestrutura:** orquestração em droplet DigitalOcean `ubuntu-s-4vcpu-8gb-nyc1`
+(4 vCPU, 8 GB RAM, 160 GB SSD; ver `FINAIS/Settings - ...DigitalOcean.pdf`).
+Inferência local dos modelos Qwen em um Apple MacBook Air (Apple Silicon) via
+`mlx_lm`, exposto ao orquestrador por túnel Ngrok em endpoint compatível com a
+OpenAI API. Cada issue foi resolvida em um contêiner Docker do SWE-Bench.
