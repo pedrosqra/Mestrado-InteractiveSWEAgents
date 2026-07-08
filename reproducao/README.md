@@ -68,7 +68,6 @@ export PATH="/root/.local/bin:$PATH"
 # Instala as dependências Python e faz o build do orquestrador (OpenHands)
 make build
 poetry install
-pip install -r requirements.txt
 
 # Cria o arquivo de configuração necessário para o OpenHands
 cp config.template.toml config.toml
@@ -111,6 +110,8 @@ bash reproducao/baterias/14b/run_rq3_gemini.sh
 ### Alternativa: Modelos Locais via MLX e Ngrok (Apple Silicon)
 Para reproduzir a infraestrutura exata do experimento (rodando o agente no Droplet e o LLM Qwen localmente em um Mac com chip M1/M2/M3):
 
+**Aviso Importante:** Esta alternativa cobre **apenas o Agente (Qwen)**. Para o Simulador de Usuário (Gemini), você ainda precisa seguir a Opção A (exportar `GEMINI_API_KEY`) ou a Opção B (exportar `OPENROUTER_API_KEY` e editar o script).
+
 1. **No seu Mac**, instale o MLX e inicie o servidor do modelo desejado:
    ```bash
    pip3 install mlx-lm
@@ -122,14 +123,17 @@ Para reproduzir a infraestrutura exata do experimento (rodando o agente no Dropl
    ```bash
    ngrok http 8080
    ```
-3. **No Droplet**, configure o `config.toml` (criado no Passo 1) apontando para o URL gerado pelo Ngrok e usando o prefixo `openai/` para compatibilidade com a API:
+3. **No Droplet**, configure o `config.toml` apontando para o URL gerado pelo Ngrok. 
+   **Atenção:** O nome do bloco `[llm.*]` deve corresponder exatamente ao nome do modelo (Agent) declarado no script `.sh` (ex: `[llm.qwen_1_5b]`, `[llm.qwen_7b]`, ou `[llm.qwen_14b]`). Se você for testar todos, insira um bloco para cada.
+
+   Exemplo para o 14B:
    ```toml
    [llm.qwen_14b]
    model = "openai/mlx-community/Qwen2.5-Coder-14B-Instruct-4bit"
    base_url = "https://SEU-URL.ngrok-free.app/v1"
    api_key = "sk-1234" # API Key fictícia necessária para a biblioteca
    ```
-4. Execute o script da bateria no Droplet (o modelo apontará para o seu Mac automaticamente):
+4. Execute o script da bateria no Droplet (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API escolhida):
    ```bash
    bash reproducao/baterias/14b/run_rq3_gemini.sh
    ```

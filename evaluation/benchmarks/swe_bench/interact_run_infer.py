@@ -88,7 +88,7 @@ class FakeUser:
                 kwargs['api_base'] = llm_config.base_url
         else:
             model_name = self.simulator_model
-            if 'gemini' in model_name and not model_name.startswith('gemini/'):
+            if 'gemini' in model_name and not '/' in model_name:
                 model_name = f"gemini/{model_name}"
             kwargs['model'] = model_name
 
