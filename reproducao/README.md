@@ -37,18 +37,35 @@ reproducao/
 
 ## Pré-requisitos
 
+Este ambiente foi projetado e testado principalmente para rodar em **Ubuntu/Debian**.
+
 ```bash
 pip install -r requirements.txt
 ```
+
+> **Aviso sobre o Docker (Tamanho das imagens):** O download inicial das imagens do OpenHands e SWE-bench pode levar um bom tempo. São **mais de 40GB** de imagens Docker que precisam ser baixadas e descompactadas na primeira execução.
+
+> **Nota para usuários de macOS (Processadores Apple Silicon):** Devido à arquitetura ARM e à necessidade de emular os contêineres Linux x86 exigidos pelo SWE-bench, este experimento **não rodará perfeitamente** em Macs com chips da família M. A emulação (Rosetta 2) pode causar extrema lentidão e travamentos na comunicação interna do agente (IPC do Jupyter). Para uma reprodução fiel e estável, recomenda-se fortemente executar em hardware x86_64 nativo.
+
 
 ## Como reproduzir
 
 1. **Amostragem.** `python3 scripts/generate_sample.py` seleciona 30 das 500
    issues de `data/underspecified.csv` com semente 42.
 2. **Execução.** Os scripts em `baterias/<escala>/` rodam as sessões de cada
-   configuração. Os modelos 7B/14B rodam localmente em MLX 4-bit, o 1.5B local
-   em 16-bit, e o 32B via API (OpenRouter). As chaves de API são lidas de
-   variáveis de ambiente.
+   configuração (recebendo automaticamente a amostra de 30 instâncias gerada no passo anterior). 
+   
+   **A) Para replicação estrita do experimento original:**
+   Você precisará de uma infraestrutura equivalente: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI), e acesso ao OpenRouter para o modelo 32B.
+
+   **B) Para testar a pipeline com outros LLMs (Caminho mais fácil):**
+   É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API de terceiros. Como o orquestrador usa o LiteLLM, basta alterar as variáveis `MODELS` e `SIMULATORS` no topo dos scripts `.sh`.
+   Por exemplo, para testar a suíte no Google Gemini, ajuste o script:
+   ```bash
+   MODELS=("gemini/gemini-1.5-pro-latest")
+   SIMULATORS=("gemini/gemini-1.5-flash-latest")
+   ```
+   E exporte sua chave no terminal antes de executar: `export GEMINI_API_KEY="sua_chave"`.
 3. **Métricas.** Os dados processados ficam em `experiments/`:
    `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/`
    (Judge e experimento de swap).
