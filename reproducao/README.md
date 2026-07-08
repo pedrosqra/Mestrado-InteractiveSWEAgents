@@ -35,37 +35,63 @@ reproducao/
 ../data/sample_30_underspecified.csv   Amostra utilizada
 ```
 
-## Pré-requisitos
+## Pré-requisitos (Configuração do Sistema)
 
-Este ambiente foi projetado e testado principalmente para rodar em **Ubuntu/Debian**.
+Este ambiente foi projetado e testado principalmente para rodar em **Ubuntu/Debian**. Para montar a infraestrutura do zero (por exemplo, em uma Droplet recém-criada), siga os passos abaixo:
 
+### Passo 1: Instalar as dependências do sistema
 ```bash
-pip install -r requirements.txt
+sudo apt update
+sudo apt install -y build-essential python3-pip python3.12-venv netcat-openbsd curl nodejs npm
 ```
 
-> **Aviso sobre o Docker (Tamanho das imagens):** O download inicial das imagens do OpenHands e SWE-bench pode levar um bom tempo. São **mais de 40GB** de imagens Docker que precisam ser baixadas e descompactadas na primeira execução.
+### Passo 2: Instalar o Docker
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo systemctl enable --now docker
+```
+> **Aviso sobre o Docker (Tamanho das imagens):** O download inicial das imagens do OpenHands e SWE-bench (feito automaticamente mais adiante) pode levar um bom tempo. São **mais de 40GB** de imagens Docker que precisam ser baixadas e descompactadas na primeira execução.
 
 > **Nota para usuários de macOS (Processadores Apple Silicon):** Devido à arquitetura ARM e à necessidade de emular os contêineres Linux x86 exigidos pelo SWE-bench, este experimento **não rodará perfeitamente** em Macs com chips da família M. A emulação (Rosetta 2) pode causar extrema lentidão e travamentos na comunicação interna do agente (IPC do Jupyter). Para uma reprodução fiel e estável, recomenda-se fortemente executar em hardware x86_64 nativo.
+
+### Passo 3: Instalar o Poetry e Fazer o Build
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+export PATH="/root/.local/bin:$PATH"
+
+# Instala as dependências Python e faz o build do orquestrador (OpenHands)
+make build
+pip install -r requirements.txt
+```
 
 
 ## Como reproduzir
 
-1. **Amostragem.** `python3 scripts/generate_sample.py` seleciona 30 das 500
-   issues de `data/underspecified.csv` com semente 42.
-2. **Execução.** Os scripts em `baterias/<escala>/` rodam as sessões de cada
-   configuração (recebendo automaticamente a amostra de 30 instâncias gerada no passo anterior). 
-   
-   **A) Para replicação estrita do experimento original:**
-   Você precisará de uma infraestrutura equivalente: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI), e acesso ao OpenRouter para o modelo 32B.
+### Passo 4: Amostragem
+Gere a amostra das 30 issues originais:
+```bash
+python3 scripts/generate_sample.py
+```
+*Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.*
 
-   **B) Para testar a pipeline com outros LLMs (Caminho mais fácil):**
-   É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API de terceiros. Como o orquestrador usa o LiteLLM, basta alterar as variáveis `MODELS` e `SIMULATORS` no topo dos scripts `.sh`.
-   Por exemplo, para testar a suíte no Google Gemini, ajuste o script:
-   ```bash
-   MODELS=("gemini/gemini-1.5-pro-latest")
-   SIMULATORS=("gemini/gemini-1.5-flash-latest")
-   ```
-   E exporte sua chave no terminal antes de executar: `export GEMINI_API_KEY="sua_chave"`.
+### Passo 5: Execução
+Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4). 
+   
+**A) Para replicação estrita do experimento original:**
+Você precisará de uma infraestrutura equivalente: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI), e acesso ao OpenRouter para o modelo 32B.
+
+**B) Para testar a pipeline via OpenRouter (Caminho mais fácil):**
+É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API centralizadas. Como o orquestrador usa o LiteLLM, basta alterar as variáveis `MODELS` e `SIMULATORS` no topo dos scripts `.sh` informando o prefixo do provedor.
+Por exemplo, para usar o Gemini via OpenRouter, edite o script (ex: `reproducao/baterias/14b/run_rq3_gemini.sh`):
+```bash
+MODELS=("openrouter/google/gemini-3.5-flash")
+SIMULATORS=("openrouter/google/gemini-3.5-flash")
+```
+E exporte sua chave do OpenRouter no terminal antes de executar o script:
+```bash
+export OPENROUTER_API_KEY="sua_chave"
+```
 3. **Métricas.** Os dados processados ficam em `experiments/`:
    `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/`
    (Judge e experimento de swap).
