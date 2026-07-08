@@ -638,7 +638,8 @@ if __name__ == '__main__':
     )
 
     output_file = os.path.join(metadata.eval_output_dir, 'output.jsonl')
-    instances = prepare_dataset(swe_bench_tests, output_file, args.eval_n_limit)
+    eval_ids = args.eval_ids.split(',') if args.eval_ids else None
+    instances = prepare_dataset(swe_bench_tests, output_file, args.eval_n_limit, eval_ids)
 
     if len(instances) > 0 and not isinstance(
         instances['PASS_TO_PASS'][instances['PASS_TO_PASS'].index[0]], str
