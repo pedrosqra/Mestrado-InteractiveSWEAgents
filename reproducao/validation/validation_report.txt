@@ -1,0 +1,79 @@
+=== Validation Report ===
+
+--- Running validate_raw_data.py ---
+=== Script 1: Validate Raw Data ===
+PASS: sample_30_underspecified.csv has exactly 30 unique instance_ids
+PASS: qwen_1_5b_gpt has no difference_score = 0.0
+PASS: qwen_1_5b_gpt has 0 qa_pairs in all 30 issues
+PASS: qwen_1_5b_gemini has no difference_score = 0.0
+PASS: qwen_1_5b_gemini has 0 qa_pairs in all 30 issues
+PASS: qwen_7b_gpt has no difference_score = 0.0
+PASS: qwen_7b_gemini has no difference_score = 0.0
+PASS: qwen_14b_gpt has no difference_score = 0.0
+PASS: qwen_14b_gemini has no difference_score = 0.0
+PASS: qwen_14b_gemini has exactly 29 valid issues (1 without qa_pairs)
+PASS: qwen_32b_gpt has no difference_score = 0.0
+PASS: qwen_32b_gemini has no difference_score = 0.0
+
+--- Running validate_aggregation.py ---
+=== Script 2: Validate Aggregation ===
+PASS: qwen_7b_gpt expected 0.0794, got 0.0794
+      CONFIRMED: dict(zip(...)) would produce 0.0280, which is different from groupby().mean()
+PASS: qwen_7b_gemini expected 0.1548, got 0.1548
+      CONFIRMED: dict(zip(...)) would produce 0.1187, which is different from groupby().mean()
+PASS: qwen_14b_gpt expected 0.1031, got 0.1031
+      CONFIRMED: dict(zip(...)) would produce 0.0840, which is different from groupby().mean()
+PASS: qwen_14b_gemini expected 0.1773, got 0.1773
+      CONFIRMED: dict(zip(...)) would produce 0.1728, which is different from groupby().mean()
+PASS: qwen_32b_gpt expected 0.1356, got 0.1356
+      INFO: dict(zip(...)) produced same as groupby().mean() for this data.
+PASS: qwen_32b_gemini expected 0.1808, got 0.1808
+      CONFIRMED: dict(zip(...)) would produce 0.1798, which is different from groupby().mean()
+
+--- Running validate_wilcoxon_simulator.py ---
+=== Script 3: Validate Wilcoxon Simulator ===
+PASS: 7b has N=30 valid paired issues
+PASS: 7b p-value 1.06e-05 < 0.0001 (expected ~1.06e-05)
+PASS: 14b has N=29 valid paired issues
+PASS: 14b p-value 1.38e-06 < 0.0001 (expected ~1.38e-06)
+PASS: 32b has N=30 valid paired issues
+PASS: 32b p-value 2.08e-05 < 0.0001 (expected ~2.07e-05)
+
+--- Running validate_wilcoxon_scale.py ---
+=== Script 4: Validate Wilcoxon Scale ===
+PASS: Scale (7B vs 14B) - GPT-mini | p=0.175 (expected ~0.175) | Significant? False
+PASS: Scale (7B vs 14B) - Gemini Flash | p=0.044 (expected ~0.044) | Significant? True
+PASS: Judge Scale (7B vs 14B) - GPT-mini | p=0.012 (expected ~0.012) | Significant? True
+PASS: Judge Scale (7B vs 14B) - Gemini Flash | p=0.003 (expected ~0.003) | Significant? True
+
+--- Running validate_mcnemar_1_5b.py ---
+=== Script 5: Validate McNemar 1.5B ===
+Contingency Table:
+           7B: Yes   7B: No
+1.5B: Yes    0         0
+1.5B: No     30         0
+PASS: McNemar p-value 1.86e-09 < 0.0001
+
+--- Running validate_swap_experiment.py ---
+=== Script 6: Validate Swap Experiment ===
+
+[7b] Identical questions: 30/30
+PASS: Simulator effect 7b p=6.32e-04 (expected ~6.32e-04)
+PASS: Question effect 7b p=nan (expected ~1.000)
+
+[14b] Identical questions: 29/29
+PASS: Simulator effect 14b p=2.53e-04 (expected ~2.53e-04)
+PASS: Question effect 14b p=nan (expected ~0.317)
+
+[32b] Identical questions: 11/30
+PASS: Simulator effect 32b p=3.56e-04 (expected ~1.32e-04)
+PASS: Question effect 32b p=1.000 (expected ~0.564)
+
+[STDERR]
+/sessions/youthful-happy-davinci/.local/lib/python3.10/site-packages/scipy/stats/_wilcoxon.py:172: RuntimeWarning: invalid value encountered in scalar divide
+  z = (r_plus - mn) / se
+
+
+=== Summary ===
+PASS: 35
+FAIL: 0

@@ -28,11 +28,11 @@ reproducao/
 ├── scripts/
 │   └── generate_sample.py     Amostragem das 30 instâncias (seed 42)
 ├── baterias/                  Scripts de execução por escala (1_5b, 7b, 14b, 32b)
+├── validation/                Suíte independente de validação estatística
 ├── verify_all_numbers.py      Verifica os números reportados contra os dados brutos
 └── requirements.txt
 
-../validation/                 Suíte independente de validação estatística
-../data/sample_30_underspecified.csv   Amostra utilizada
+../data/sample_30_underspecified.csv   Amostra utilizada (na raiz do repositório)
 ```
 
 ## Pré-requisitos (Configuração do Sistema)
@@ -79,9 +79,9 @@ cp config.template.toml config.toml
 ### Passo 4: Amostragem
 Gere a amostra das 30 issues originais (e o arquivo de filtro para o OpenHands):
 ```bash
-poetry run python3 scripts/generate_sample.py
+poetry run python3 reproducao/scripts/generate_sample.py
 ```
-*Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.*
+*Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.* Rode a partir da raiz do projeto: o script grava tanto em `data/sample_30_underspecified.csv` quanto no filtro `evaluation/benchmarks/swe_bench/config.toml` que o OpenHands exige.
 
 ### Passo 5: Execução
 Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4). 
@@ -137,20 +137,29 @@ Para reproduzir a infraestrutura exata do experimento (rodando o agente no Dropl
    ```bash
    bash reproducao/baterias/14b/run_rq3_gemini.sh
    ```
-3. **Métricas.** Os dados processados ficam em `experiments/`:
-   `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/`
-   (Judge e experimento de swap).
-4. **Verificação dos números.** Confere cada valor reportado contra os dados
-   brutos:
-   ```bash
-   python3 verify_all_numbers.py
-   ```
-   Saída esperada: status `OK` em todos os checks (com tolerância de
-   arredondamento no último dígito).
-5. **Validação independente.** Suíte separada com um teste por métrica:
-   ```bash
-   python3 ../validation/run_all_validations.py
-   ```
+### Passo 6: Ambiente de análise
+As etapas de métricas, verificação e validação usam um ambiente Python separado do OpenHands (testado em Python 3.10). A partir da raiz do repositório:
+```bash
+cd reproducao
+pip install -r requirements.txt
+```
+
+### Passo 7: Métricas
+Os dados processados ficam em `experiments/`: `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/` (Judge e experimento de swap). Os CSVs já vêm versionados no repositório; os `output.jsonl` brutos que os originam estão arquivados no Zenodo. Como esses logs são pesados, a pasta `reproducao/FINAIS/` que os contém não é versionada: para reproduzir os números do artigo bastam os CSVs já versionados (passos 8 e 9); para reexecutar a extração do zero (ex.: `extracted_qa_pairs/extract_qwen_qa_pairs.py`), baixe os logs do Zenodo para `reproducao/FINAIS/`.
+
+### Passo 8: Verificação dos números
+Confere cada valor reportado no artigo contra os dados brutos (a partir de `reproducao/`):
+```bash
+python3 verify_all_numbers.py
+```
+Saída esperada: status `OK` em todos os checks (com tolerância de arredondamento no último dígito).
+
+### Passo 9: Validação independente
+Suíte separada, com um teste por métrica (a partir de `reproducao/`):
+```bash
+python3 validation/run_all_validations.py
+```
+Saída esperada: `PASS: 35` e `FAIL: 0`.
 
 ## Versões e ambiente (reprodutibilidade)
 
@@ -211,7 +220,7 @@ OpenAI API. Cada issue foi resolvida em um contêiner Docker do SWE-Bench.
 
 - **`KeyError: 'PASS_TO_PASS'` na linha 644 do interact_run_infer.py**
   - **Causa:** O script Python do OpenHands tentou carregar a amostra bruta de 30 instâncias em vez do Dataset completo, por não encontrar o arquivo de filtro de IDs na configuração.
-  - **Solução:** Certifique-se de executar o Passo 4 (`poetry run python3 scripts/generate_sample.py`) **antes** das baterias. Esse script cria automaticamente o arquivo `evaluation/benchmarks/swe_bench/config.toml` necessário.
+  - **Solução:** Certifique-se de executar o Passo 4 (`poetry run python3 reproducao/scripts/generate_sample.py`) **antes** das baterias. Esse script cria automaticamente o arquivo `evaluation/benchmarks/swe_bench/config.toml` necessário.
 
 - **`make build` falhando no `check-nodejs` com `Error 1` ou `Error 2`**
   - **Causa:** A versão do Node.js nos repositórios padrão do Ubuntu (apt) pode ser antiga (ex: v18), e o OpenHands exige Node >= 20.x.

@@ -1,85 +1,29 @@
-## Sobre este repositório: Reprodução e Extensão da RQ3 (PPGCC/UFCG)
+# Reprodução e Extensão da RQ3 do Ambig-SWE (PPGCC/UFCG)
 
-Este repositório deriva do [projeto original](https://github.com/sani903/InteractiveSWEAgents),
-descrito abaixo, e o estende com a reprodução
-parcial e extensão da RQ3 do benchmark (qualidade das perguntas de clarificação),
-aplicada à família open-weight Qwen2.5 Coder (1.5B, 7B, 14B e 32B) sob dois
-simuladores de usuário (GPT-4o-mini e Gemini 3.5 Flash).
+Este repositório é um fork de [InteractiveSWEAgents](https://github.com/sani903/InteractiveSWEAgents), o benchmark **Ambig-SWE** construído sobre o framework [OpenHands](https://github.com/All-Hands-AI/OpenHands). Ele estende o projeto original com a reprodução parcial e a extensão da RQ3 (qualidade das perguntas de clarificação), aplicada à família open-weight Qwen2.5 Coder (1.5B, 7B, 14B e 32B) sob dois simuladores de usuário (GPT-4o-mini e Gemini 3.5 Flash).
 
-- Documentação, dados processados e scripts: [reproducao/README.md](reproducao/README.md)
-- Suíte de validação: [validation/](validation/)
-- Logs brutos das 240 execuções: [DOI 10.5281/zenodo.21211716](https://doi.org/10.5281/zenodo.21211716)
+- Guia completo de reprodução, dados processados e scripts: [reproducao/README.md](reproducao/README.md)
+- Suíte de validação estatística: [reproducao/validation/](reproducao/validation/)
+- Logs brutos das 240 execuções (Zenodo): [DOI 10.5281/zenodo.21211716](https://doi.org/10.5281/zenodo.21211716)
 
----
+Toda a documentação, o código de análise e os artefatos da reprodução ficam na pasta `reproducao/`. O restante do repositório preserva a base do OpenHands/Ambig-SWE para permitir a execução idêntica à do estudo original; para a documentação do framework, consulte os repositórios linkados acima.
 
-# Interactive Agents To Overcome Ambiguity in Software Engineering
+## Licença
 
-[Paper](https://arxiv.org/abs/2502.13069): This paper presents interactive agents designed to overcome ambiguity in software engineering tasks.
+Distribuído sob a Licença MIT, herdada do projeto original. Veja [`LICENSE`](./LICENSE).
 
-## 🛠 Setup
+## Citação (trabalho original)
 
-This project uses the [OpenHands agent framework](https://github.com/All-Hands-AI/OpenHands). Follow the OpenHands documentation for setup instructions.
-
-Ensure you have the necessary dependencies installed before running experiments.
-
-## 📂 Project Structure
-
-- `experiments/` – Contains the experiment code.
-- `evaluation/benchmarks/swe_bench/` – Contains scripts for running different evaluation settings.
-- `evaluation/benchmarks/swe_bench/scripts/{base/hidden/interact}_run_infer.sh` – Main script to run inference experiments for evaluating impact of interaction.
-- `evaluation/benchmarks/swe_bench/scripts/test_interactivity.sh` – Script to evaluate ambiguity detection with high/medium/low encouragement for interaction.
-
-## 🚀 Running Experiments
-
-To run experiments in **Full, Hidden, and Interaction settings**, use the following command:
-
-```bash
-./evaluation/benchmarks/swe_bench/scripts/{base/hidden/interact}_run_infer.sh [model_config] [git-version] [agent] [eval_limit] [max_iter] [num_workers] [dataset] [dataset_split]
-```
-Example:
-```bash
-./evaluation/benchmarks/swe_bench/scripts/base_run_infer.sh llm.eval_gpt4_1106_preview HEAD CodeActAgent 300 30 1 princeton-nlp/SWE-bench_Lite test
-```
-Due to the dependence on OpenHands agentic framework, running the scripts smoothly might require pulling the latest updates from the OpenHands repository. To do this, set up OpenHands as an Upstream Remote.
-
-```bash
-git remote add upstream https://github.com/All-Hands-AI/OpenHands.git
-git fetch upstream
-git merge upstream/main
-```
-
-## 📊 Experiment Results & Logs
-
-- Results are stored in the corresponding experiment directory.
-- The agent trajectories in various settings are visualized using Zeno. You can view the visualizations [here](https://hub.zenoml.com/project/c9d9d582-9eb0-4cc3-9ff3-e27b4f95dca8/SWE-bench%20Conversation%20Analysis).
-
-
-## 🤝 Contributing
-
-We welcome contributions! Please open an issue or submit a pull request.
-
-## 📜 License
-
-Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more information.
-
-## 🙏 Acknowledgements
-
-The experiments are conducted using the [OpenHands agent framework](https://github.com/All-Hands-AI/OpenHands). We also want to thank the creators of Zeno for helping visualize the agent trajectories.
-
-## 📖 Citation
-
-If you use this work, please cite our paper:
+Esta é uma reprodução e extensão do Ambig-SWE. Ao utilizá-la, cite o paper original:
 
 ```
 @misc{vijayvargiya2025interactiveagentsovercomeambiguity,
-      title={Interactive Agents to Overcome Ambiguity in Software Engineering}, 
+      title={Interactive Agents to Overcome Ambiguity in Software Engineering},
       author={Sanidhya Vijayvargiya and Xuhui Zhou and Akhila Yerukola and Maarten Sap and Graham Neubig},
       year={2025},
       eprint={2502.13069},
       archivePrefix={arXiv},
       primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2502.13069}, 
+      url={https://arxiv.org/abs/2502.13069},
 }
 ```
-
-

@@ -235,12 +235,5 @@ containers/runtime/code
 **/node_modules/
 
 # Ambig-SWE Reproducao Local
-.agents/
-Ambig.pdf
-chat_history.md
-context.md
-interactivesweagents-1/
-smoke_test_run.sh
-reproducao/FINAIS/
-
-etapa1.tex
+Ambig.pdf              # PDF do paper original (nao redistribuir; citar via arXiv)
+reproducao/FINAIS/     # logs brutos das 240 execucoes (arquivados no Zenodo)

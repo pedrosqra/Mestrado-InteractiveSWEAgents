@@ -184,12 +184,22 @@ for m in ['7b','14b','32b']:
 
 print(f"\n### Tabela 2 — p-values pergunta do agente")
 p_q_esp = {'7b':(1.0,1.0),'14b':(1.0,1.0),'32b':(0.75,1.0)}  # teste exato (N efetivo pequeno)
+def _wilcoxon_perg(a, b):
+    # Colunas de pergunta sao degeneradas (muitos empates). Descartamos os zeros
+    # ANTES do teste exato para o resultado nao depender da versao do scipy:
+    # versoes antigas caem para a aproximacao normal quando ha zeros; sem os zeros
+    # o exato roda igual em qualquer versao. Sem pares nao-nulos, o teste e degenerado (p=1).
+    d = np.asarray(a, dtype=float) - np.asarray(b, dtype=float)
+    d = d[d != 0]
+    if len(d) == 0:
+        return 1.0
+    try:              return stats.wilcoxon(d, mode='exact').pvalue
+    except TypeError: return stats.wilcoxon(d, method='exact').pvalue
+    except Exception: return stats.wilcoxon(d).pvalue
 for m in ['7b','14b','32b']:
     sub = swap[swap['model']==m]
-    try:    _, pg = stats.wilcoxon(sub['score_orig_gpt'], sub['score_swap_gem_gpt'], mode='exact')
-    except: pg = 1.0
-    try:    _, pk = stats.wilcoxon(sub['score_orig_gemini'], sub['score_swap_gpt_gem'], mode='exact')
-    except: pk = 1.0
+    pg = _wilcoxon_perg(sub['score_orig_gpt'], sub['score_swap_gem_gpt'])
+    pk = _wilcoxon_perg(sub['score_orig_gemini'], sub['score_swap_gpt_gem'])
     p1,p2 = p_q_esp[m]
     st = "OK" if abs(pg-p1)<0.001 and abs(pk-p2)<0.001 else "DIFF"
     print(f"  {m}: GPT-ref={pg:.3f} (esperado {p1}) | GEM-ref={pk:.3f} (esperado {p2})  {st}")
@@ -272,5 +282,5 @@ for m in ['7b','14b','32b']:
 print("  faixas reportadas: deltas +0,26 a +0,42; p entre 0,003 e 0,025; contribuição 50 a 77%")
 
 print(f"\n{SEP}")
-print("FIM — verifique todos os e acima")
+print("FIM. Verifique os status acima: OK = confere, DIFF = divergência.")
 print(SEP)
