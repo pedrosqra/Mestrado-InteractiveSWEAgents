@@ -84,7 +84,7 @@ jobs:
           tar -czvf evaluation_outputs_${TIMESTAMP}.tar.gz evaluation/evaluation_outputs/outputs
 
       - name: Upload evaluation results as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         id: upload_results_artifact
         with:
           name: evaluation-outputs
