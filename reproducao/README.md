@@ -13,7 +13,8 @@ As métricas são `avg_q` (perguntas por sessão), IG (distância de cosseno via
 `text-embedding-3-small`) e LLM-as-a-Judge (GPT-4o, escala 1 a 5).
 
 Os logs brutos das 240 execuções (trajetórias completas do OpenHands) estão
-arquivados em Zenodo: [10.5281/zenodo.21211716](https://doi.org/10.5281/zenodo.21211716).
+versionados em `FINAIS/` e também arquivados permanentemente em Zenodo:
+[10.5281/zenodo.21211716](https://doi.org/10.5281/zenodo.21211716).
 
 ## Estrutura
 
@@ -28,6 +29,7 @@ reproducao/
 ├── scripts/
 │   └── generate_sample.py     Amostragem das 30 instâncias (seed 42)
 ├── baterias/                  Scripts de execução por escala (1_5b, 7b, 14b, 32b)
+├── FINAIS/                    Logs brutos das 240 execuções (output.jsonl); espelhados no Zenodo
 ├── validation/                Suíte independente de validação estatística
 ├── verify_all_numbers.py      Verifica os números reportados contra os dados brutos
 └── requirements.txt
@@ -145,7 +147,7 @@ pip install -r requirements.txt
 ```
 
 ### Passo 7: Métricas
-Os dados processados ficam em `experiments/`: `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/` (Judge e experimento de swap). Os CSVs já vêm versionados no repositório; os `output.jsonl` brutos que os originam estão arquivados no Zenodo. Como esses logs são pesados, a pasta `reproducao/FINAIS/` que os contém não é versionada: para reproduzir os números do artigo bastam os CSVs já versionados (passos 8 e 9); para reexecutar a extração do zero (ex.: `extracted_qa_pairs/extract_qwen_qa_pairs.py`), baixe os logs do Zenodo para `reproducao/FINAIS/`.
+Os dados processados ficam em `experiments/`: `extracted_qa_pairs/` (avg_q), `cosine_distance/` (IG) e `llm_as_judge/` (Judge e experimento de swap). Os CSVs já vêm versionados no repositório; os `output.jsonl` brutos que os originam ficam em `reproducao/FINAIS/`, versionados no próprio repositório e também arquivados no Zenodo. Para reproduzir os números do artigo bastam os CSVs já versionados (passos 8 e 9); para reexecutar a extração do zero (ex.: `extracted_qa_pairs/extract_qwen_qa_pairs.py`), a pasta `reproducao/FINAIS/` já está disponível no repositório.
 
 ### Passo 8: Verificação dos números
 Confere cada valor reportado no artigo contra os dados brutos (a partir de `reproducao/`):
