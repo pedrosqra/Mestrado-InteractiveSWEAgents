@@ -104,7 +104,7 @@ Como o OpenHands usa o LiteLLM para rotear os modelos, adicione blocos no `confi
 ```toml
 # Simulador
 [llm.gemini-flash-latest]
-model = "openai/gemini-flash-latest" # Opcional: ajustar para "openai/google/gemini-1.5-flash" se necessário
+model = "openai/~google/gemini-flash-latest"
 base_url = "https://openrouter.ai/api/v1"
 api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
 
