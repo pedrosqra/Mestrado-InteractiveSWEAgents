@@ -97,7 +97,6 @@ bash reproducao/baterias/14b/run_rq3_gemini.sh
 ```
 
 **B) Para testar a pipeline via OpenRouter (Caminho mais fácil):**
-É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API centralizadas. Como o orquestrador usa o LiteLLM, basta alterar as variáveis `MODELS` e `SIMULATORS` no topo dos scripts `.sh` informando o prefixo do provedor.
 Por exemplo, para usar o Gemini via OpenRouter, edite o script (ex: `reproducao/baterias/14b/run_rq3_gemini.sh`):
 ```bash
 MODELS=("openrouter/google/gemini-3.5-flash")
