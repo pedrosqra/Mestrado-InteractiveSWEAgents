@@ -85,6 +85,8 @@ poetry run python3 reproducao/scripts/generate_sample.py
 ```
 *Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.* Rode a partir da raiz do projeto: o script grava tanto em `data/sample_30_underspecified.csv` quanto no filtro `evaluation/benchmarks/swe_bench/config.toml` que o OpenHands exige.
 
+**Nota importante:** esse `evaluation/benchmarks/swe_bench/config.toml` gerado aqui não é o mesmo arquivo do `config.toml` da raiz do repositório (que guarda os LLMs) — é um arquivo local, **não versionado no git**, lido pela função `filter_dataset()` em `interact_run_infer.py`. Ela sempre procura esse arquivo e, se ele existir com uma chave `selected_ids`, filtra **qualquer** dataset carregado (seja `princeton-nlp/SWE-bench_Lite` completo, seja o CSV da amostra) para as mesmas 30 instâncias — independente do que o `--dataset`/`DATASET_PATH` de cada script de bateria diga. Foi por isso que, na execução original, os scripts do 7B/32B (que ainda apontavam para `princeton-nlp/SWE-bench_Lite`) acabaram avaliando exatamente as mesmas 30 issues do 14B: o filtro sempre restringia a execução por baixo dos panos. Os scripts já foram atualizados (depois da execução) para apontar direto para `data/sample_30_underspecified.csv`, deixando isso explícito e removendo a dependência desse arquivo lateral — mas rodar o Passo 4 primeiro continua necessário de qualquer forma, para que o `interact_run_infer.py` (e o próprio `evaluation/benchmarks/swe_bench/config.toml`) funcionem.
+
 ### Passo 5: Execução
 Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4).
 
@@ -107,7 +109,7 @@ api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
 Os scripts `run_gpt.sh` / `run_rq3_gpt.sh` / `run_rq3.sh` (em cada `baterias/<escala>/`) usam `SIMULATORS=("gpt-4o-mini")` no lugar do Gemini. Diferente do Gemini, esse simulador **deve** ser executado direto na OpenAI Platform (não via OpenRouter). Como não existe hoje nenhum bloco `[llm.gpt-4o-mini]` no `config.toml` cujo nome bata exatamente com `gpt-4o-mini`, o LiteLLM cai no comportamento padrão e usa a API oficial da OpenAI sozinho. Basta exportar a chave antes de rodar o script:
 ```bash
 export OPENAI_API_KEY="sua_chave_da_openai"
-bash reproducao/baterias/14b/run_rq3.sh
+bash reproducao/baterias/7b/run_gpt.sh
 ```
 **Atenção:** o `config.toml` já traz uma seção `[llm.gpt4o-mini]` (sem hífen entre "gpt4o" e "mini") com `api_key = "your-api-key"`. Esse nome **não** corresponde a `gpt-4o-mini` (o valor usado em `SIMULATORS`), então essa seção é ignorada pelo simulador — não adianta editá-la.
 
@@ -116,9 +118,9 @@ bash reproducao/baterias/14b/run_rq3.sh
 1. **No seu Mac**, instale o MLX e inicie o servidor do modelo desejado:
    ```bash
    pip3 install mlx-lm
-   # Nota: Se trocar o tamanho do modelo (ex: para 1.5B ou 7B), lembre-se de manter
+   # Nota: Se trocar o tamanho do modelo (ex: para 1.5B ou 14B), lembre-se de manter
    # o sufixo de quantização no nome (como -4bit ou -bf16) exigido pelo mlx-community
-   python3 -m mlx_lm.server --model mlx-community/Qwen2.5-Coder-14B-Instruct-4bit --host 0.0.0.0 --port 8080
+   python3 -m mlx_lm.server --model mlx-community/Qwen2.5-Coder-7B-Instruct-4bit --host 0.0.0.0 --port 8080
    ```
 2. **No seu Mac**, exponha o servidor para a internet usando o Ngrok:
    ```bash
@@ -127,17 +129,17 @@ bash reproducao/baterias/14b/run_rq3.sh
 3. **No Droplet**, configure o `config.toml` apontando para o URL gerado pelo Ngrok.
    **Atenção:** O nome do bloco `[llm.*]` deve corresponder exatamente ao nome do modelo (Agent) declarado no script `.sh` (ex: `[llm.qwen_1_5b]`, `[llm.qwen_7b]`, ou `[llm.qwen_14b]`). Se você for testar todos, insira um bloco para cada.
 
-   Exemplo para o 14B:
+   Exemplo para o 7B:
    ```toml
-   [llm.qwen_14b]
-   model = "openai/mlx-community/Qwen2.5-Coder-14B-Instruct-4bit"
+   [llm.qwen_7b]
+   model = "openai/mlx-community/Qwen2.5-Coder-7B-Instruct-4bit"
    base_url = "https://SEU-URL.ngrok-free.app/v1"
    api_key = "sk-1234" # API Key fictícia necessária para a biblioteca
    ```
 
 **3. Execute o script da bateria no Droplet** (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API da OpenRouter):
 ```bash
-bash reproducao/baterias/14b/run_rq3_gemini.sh
+bash reproducao/baterias/7b/run_gemini.sh
 ```
 
 ### Passo 6: Ambiente de análise

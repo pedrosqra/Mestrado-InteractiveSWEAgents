@@ -5,7 +5,12 @@
 MODELS=("qwen_14b")
 SIMULATORS=("gpt-4o-mini")
 
-DATASET_PATH="princeton-nlp/SWE-bench_Lite"
+# NOTA (pós-experimento): antes, esse valor apontava para "princeton-nlp/SWE-bench_Lite",
+# mas o resultado real já era restrito às mesmas 30 instâncias da amostra do Passo 4, porque
+# o interact_run_infer.py sempre filtra o dataset carregado pelos "selected_ids" de um
+# evaluation/benchmarks/swe_bench/config.toml local (gerado pelo generate_sample.py e não
+# versionado no git). Isso só torna essa restrição explícita no próprio script.
+DATASET_PATH="data/sample_30_underspecified.csv"
 MAX_ITER=5
 
 # ==========================================
