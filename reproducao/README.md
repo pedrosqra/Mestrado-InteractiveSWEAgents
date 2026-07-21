@@ -86,43 +86,32 @@ poetry run python3 reproducao/scripts/generate_sample.py
 *Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.* Rode a partir da raiz do projeto: o script grava tanto em `data/sample_30_underspecified.csv` quanto no filtro `evaluation/benchmarks/swe_bench/config.toml` que o OpenHands exige.
 
 ### Passo 5: Execução
-Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4). 
-   
-**A) Para replicação estrita do experimento original:**
-Você precisará de uma infraestrutura equivalente: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI), e acesso ao OpenRouter para o modelo 32B.
-Como o simulador original usou a API oficial do Google AI Studio (`gemini-flash-latest`), você precisará exportar a chave do Google no Droplet:
-```bash
-export GEMINI_API_KEY="sua_chave_do_google_ai_studio"
-bash reproducao/baterias/14b/run_rq3_gemini.sh
-```
+Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4).
 
-**B) Para testar a pipeline via OpenRouter (Caminho mais fácil):**
-É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API centralizadas, sem precisar de inferência local. Para isso, **evite alterar os nomes nos arquivos `.sh`** e, em vez disso, utilize o arquivo `config.toml` (na raiz do repositório) para mapear os LLMs.
+Para reproduzir a infraestrutura exata do experimento, você precisará de: uma Droplet na DigitalOcean (x86_64) orquestrando o código, um Mac local rodando os modelos 1.5B/7B/14B via MLX expostos ao servidor por um túnel Ngrok (API compatível com OpenAI) para o Agente, e acesso ao OpenRouter para o Simulador (Gemini) e para o modelo 32B.
 
-Como o OpenHands usa o LiteLLM para rotear os modelos, adicione blocos no `config.toml` com os nomes exatos buscados pelo script (`gemini-flash-latest` e o tamanho correspondente do qwen). Redirecione as chamadas para a API do OpenRouter usando o formato compatível com a OpenAI:
+**1. Configure o Simulador (Gemini via OpenRouter)**
+
+Como o OpenHands usa o LiteLLM para rotear os modelos, adicione o bloco abaixo no `config.toml` (na raiz do repositório) com o nome exato buscado pelo script (`gemini-flash-latest`):
 
 ```toml
 # Simulador
 [llm.gemini-flash-latest]
-model = "openai/~google/gemini-flash-latest"
-base_url = "https://openrouter.ai/api/v1"
-api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
-
-# Agente (exemplo para o 14B)
-[llm.qwen_14b]
-model = "openai/qwen-2.5-coder-14b-instruct" # Ajuste para o ID exato no OpenRouter
+model = "openai/~google/gemini-flash-latest" # O "~" antes de "google/" é obrigatório: sem ele a OpenRouter rejeita o slug
 base_url = "https://openrouter.ai/api/v1"
 api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
 ```
-Após configurar o arquivo, basta rodar o script:
+
+**Alternativa de Simulador: GPT-4o-mini (via OpenAI Platform)**
+
+Os scripts `run_gpt.sh` / `run_rq3_gpt.sh` / `run_rq3.sh` (em cada `baterias/<escala>/`) usam `SIMULATORS=("gpt-4o-mini")` no lugar do Gemini. Diferente do Gemini, esse simulador **deve** ser executado direto na OpenAI Platform (não via OpenRouter). Como não existe hoje nenhum bloco `[llm.gpt-4o-mini]` no `config.toml` cujo nome bata exatamente com `gpt-4o-mini`, o LiteLLM cai no comportamento padrão e usa a API oficial da OpenAI sozinho. Basta exportar a chave antes de rodar o script:
 ```bash
-bash reproducao/baterias/14b/run_rq3_gemini.sh
+export OPENAI_API_KEY="sua_chave_da_openai"
+bash reproducao/baterias/14b/run_rq3.sh
 ```
+**Atenção:** o `config.toml` já traz uma seção `[llm.gpt4o-mini]` (sem hífen entre "gpt4o" e "mini") com `api_key = "your-api-key"`. Esse nome **não** corresponde a `gpt-4o-mini` (o valor usado em `SIMULATORS`), então essa seção é ignorada pelo simulador — não adianta editá-la.
 
-### Alternativa: Modelos Locais via MLX e Ngrok (Apple Silicon)
-Para reproduzir a infraestrutura exata do experimento (rodando o agente no Droplet e o LLM Qwen localmente em um Mac com chip M1/M2/M3):
-
-**Aviso Importante:** Esta alternativa cobre **apenas o Agente (Qwen)**. Para o Simulador de Usuário (Gemini), você ainda precisa seguir a Opção A (exportar `GEMINI_API_KEY`) ou a Opção B (adicionar o bloco `[llm.gemini-flash-latest]` no `config.toml` com sua chave do OpenRouter).
+**2. Configure o Agente (Qwen via MLX + Ngrok, Apple Silicon)**
 
 1. **No seu Mac**, instale o MLX e inicie o servidor do modelo desejado:
    ```bash
@@ -135,7 +124,7 @@ Para reproduzir a infraestrutura exata do experimento (rodando o agente no Dropl
    ```bash
    ngrok http 8080
    ```
-3. **No Droplet**, configure o `config.toml` apontando para o URL gerado pelo Ngrok. 
+3. **No Droplet**, configure o `config.toml` apontando para o URL gerado pelo Ngrok.
    **Atenção:** O nome do bloco `[llm.*]` deve corresponder exatamente ao nome do modelo (Agent) declarado no script `.sh` (ex: `[llm.qwen_1_5b]`, `[llm.qwen_7b]`, ou `[llm.qwen_14b]`). Se você for testar todos, insira um bloco para cada.
 
    Exemplo para o 14B:
@@ -145,10 +134,12 @@ Para reproduzir a infraestrutura exata do experimento (rodando o agente no Dropl
    base_url = "https://SEU-URL.ngrok-free.app/v1"
    api_key = "sk-1234" # API Key fictícia necessária para a biblioteca
    ```
-4. Execute o script da bateria no Droplet (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API configurada):
-   ```bash
-   bash reproducao/baterias/14b/run_rq3_gemini.sh
-   ```
+
+**3. Execute o script da bateria no Droplet** (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API da OpenRouter):
+```bash
+bash reproducao/baterias/14b/run_rq3_gemini.sh
+```
+
 ### Passo 6: Ambiente de análise
 As etapas de métricas, verificação e validação usam um ambiente Python separado do OpenHands (testado em Python 3.10). A partir da raiz do repositório:
 ```bash
