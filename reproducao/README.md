@@ -97,21 +97,32 @@ bash reproducao/baterias/14b/run_rq3_gemini.sh
 ```
 
 **B) Para testar a pipeline via OpenRouter (Caminho mais fácil):**
-Por exemplo, para usar o Gemini via OpenRouter, edite o script (ex: `reproducao/baterias/14b/run_rq3_gemini.sh`):
-```bash
-MODELS=("openrouter/google/gemini-3.5-flash")
-SIMULATORS=("openrouter/google/gemini-3.5-flash")
+É perfeitamente possível rodar toda a suíte (agente e simulador) usando apenas chamadas de API centralizadas, sem precisar de inferência local. Para isso, **evite alterar os nomes nos arquivos `.sh`** e, em vez disso, utilize o arquivo `config.toml` (na raiz do repositório) para mapear os LLMs.
+
+Como o OpenHands usa o LiteLLM para rotear os modelos, adicione blocos no `config.toml` com os nomes exatos buscados pelo script (`gemini-flash-latest` e o tamanho correspondente do qwen). Redirecione as chamadas para a API do OpenRouter usando o formato compatível com a OpenAI:
+
+```toml
+# Simulador
+[llm.gemini-flash-latest]
+model = "openai/gemini-flash-latest" # Opcional: ajustar para "openai/google/gemini-1.5-flash" se necessário
+base_url = "https://openrouter.ai/api/v1"
+api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
+
+# Agente (exemplo para o 14B)
+[llm.qwen_14b]
+model = "openai/qwen-2.5-coder-14b-instruct" # Ajuste para o ID exato no OpenRouter
+base_url = "https://openrouter.ai/api/v1"
+api_key = "SUA_CHAVE_AQUI_DO_OPENROUTER"
 ```
-E exporte sua chave do OpenRouter no terminal antes de executar o script:
+Após configurar o arquivo, basta rodar o script:
 ```bash
-export OPENROUTER_API_KEY="sua_chave"
 bash reproducao/baterias/14b/run_rq3_gemini.sh
 ```
 
 ### Alternativa: Modelos Locais via MLX e Ngrok (Apple Silicon)
 Para reproduzir a infraestrutura exata do experimento (rodando o agente no Droplet e o LLM Qwen localmente em um Mac com chip M1/M2/M3):
 
-**Aviso Importante:** Esta alternativa cobre **apenas o Agente (Qwen)**. Para o Simulador de Usuário (Gemini), você ainda precisa seguir a Opção A (exportar `GEMINI_API_KEY`) ou a Opção B (exportar `OPENROUTER_API_KEY` e editar o script).
+**Aviso Importante:** Esta alternativa cobre **apenas o Agente (Qwen)**. Para o Simulador de Usuário (Gemini), você ainda precisa seguir a Opção A (exportar `GEMINI_API_KEY`) ou a Opção B (adicionar o bloco `[llm.gemini-flash-latest]` no `config.toml` com sua chave do OpenRouter).
 
 1. **No seu Mac**, instale o MLX e inicie o servidor do modelo desejado:
    ```bash
@@ -134,7 +145,7 @@ Para reproduzir a infraestrutura exata do experimento (rodando o agente no Dropl
    base_url = "https://SEU-URL.ngrok-free.app/v1"
    api_key = "sk-1234" # API Key fictícia necessária para a biblioteca
    ```
-4. Execute o script da bateria no Droplet (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API escolhida):
+4. Execute o script da bateria no Droplet (o agente apontará para o seu Mac automaticamente, enquanto o simulador baterá na API configurada):
    ```bash
    bash reproducao/baterias/14b/run_rq3_gemini.sh
    ```
