@@ -2,11 +2,14 @@
 MODELS=("qwen_1_5b")
 SIMULATORS=("gpt-4o-mini")
 
-# NOTA (pós-experimento): antes, esse valor apontava para "princeton-nlp/SWE-bench_Lite",
-# mas o resultado real já era restrito às mesmas 30 instâncias da amostra do Passo 4, porque
-# o interact_run_infer.py sempre filtra o dataset carregado pelos "selected_ids" de um
-# evaluation/benchmarks/swe_bench/config.toml local (gerado pelo generate_sample.py e não
-# versionado no git). Isso só torna essa restrição explícita no próprio script.
+# NOTA (pós-experimento): este valor é repassado ao wrapper interact_run_infer.sh como
+# --dataset (só um rótulo pra nomear a pasta de saída) E como --csv_file (que é quem de fato
+# carrega os dados). Sem --csv_file, o interact_run_infer.py cairia no default
+# (evaluation/benchmarks/swe_bench/data/full_summaries_verified.xlsx, um dataset bem maior) e só
+# ficaria restrito às 30 instâncias da amostra do Passo 4 se o filtro "selected_ids" em
+# evaluation/benchmarks/swe_bench/config.toml (gerado pelo generate_sample.py, não versionado no
+# git) existisse na máquina. Com --csv_file explícito no wrapper, a amostra certa é garantida
+# mesmo sem esse arquivo lateral.
 DATASET_PATH="data/sample_30_underspecified.csv"
 MAX_ITER=5
 

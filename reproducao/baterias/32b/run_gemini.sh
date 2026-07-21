@@ -24,11 +24,13 @@ for MODEL in "${MODELS[@]}"; do
         # Nome da rodada mantido limpo para os logs
         EXP_NOTE="v0.20.0-no-hint-gemini-3.5-flash-32B-run_1"
 
-        # NOTA (pós-experimento): o --dataset abaixo antes apontava para "princeton-nlp/SWE-bench_Lite",
-        # mas o resultado real já era restrito às mesmas 30 instâncias da amostra do Passo 4, porque
-        # o interact_run_infer.py sempre filtra o dataset carregado pelos "selected_ids" de um
-        # evaluation/benchmarks/swe_bench/config.toml local (gerado pelo generate_sample.py e não
-        # versionado no git). Isso só torna essa restrição explícita no próprio script.
+        # NOTA (pós-experimento): --dataset é só um rótulo (usado pra nomear a pasta de saída);
+        # quem de fato carrega os dados é --csv_file. Sem ele, o interact_run_infer.py cai no
+        # default (evaluation/benchmarks/swe_bench/data/full_summaries_verified.xlsx, um dataset
+        # bem maior) e só fica restrito às 30 instâncias da amostra do Passo 4 se o filtro
+        # "selected_ids" em evaluation/benchmarks/swe_bench/config.toml (gerado pelo
+        # generate_sample.py, não versionado no git) existir na máquina. --csv_file explícito
+        # garante a amostra certa mesmo sem esse arquivo lateral.
         poetry run python evaluation/benchmarks/swe_bench/interact_run_infer.py \
           --agent-cls CodeActAgent \
           --llm-config $MODEL \
@@ -36,6 +38,7 @@ for MODEL in "${MODELS[@]}"; do
           --eval-num-workers 1 \
           --eval-note $EXP_NOTE \
           --dataset data/sample_30_underspecified.csv \
+          --csv_file data/sample_30_underspecified.csv \
           --split test \
           --simulator_model $SIMULATOR
     done

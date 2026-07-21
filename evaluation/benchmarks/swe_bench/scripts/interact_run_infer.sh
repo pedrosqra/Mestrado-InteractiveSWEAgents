@@ -92,6 +92,7 @@ function run_eval() {
     --eval-num-workers $NUM_WORKERS \
     --eval-note $eval_note \
     --dataset $DATASET \
+    --csv_file $DATASET \
     --split $SPLIT \
     --simulator_model $SIMULATOR_MODEL"
 

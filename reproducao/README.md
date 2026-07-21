@@ -85,7 +85,9 @@ poetry run python3 reproducao/scripts/generate_sample.py
 ```
 *Isso seleciona 30 das 500 issues de `data/underspecified.csv` com semente 42.* Rode a partir da raiz do projeto: o script grava tanto em `data/sample_30_underspecified.csv` quanto no filtro `evaluation/benchmarks/swe_bench/config.toml` que o OpenHands exige.
 
-**Nota importante:** esse `evaluation/benchmarks/swe_bench/config.toml` gerado aqui não é o mesmo arquivo do `config.toml` da raiz do repositório (que guarda os LLMs) — é um arquivo local, **não versionado no git**, lido pela função `filter_dataset()` em `interact_run_infer.py`. Ela sempre procura esse arquivo e, se ele existir com uma chave `selected_ids`, filtra **qualquer** dataset carregado (seja `princeton-nlp/SWE-bench_Lite` completo, seja o CSV da amostra) para as mesmas 30 instâncias — independente do que o `--dataset`/`DATASET_PATH` de cada script de bateria diga. Foi por isso que, na execução original, os scripts do 7B/32B (que ainda apontavam para `princeton-nlp/SWE-bench_Lite`) acabaram avaliando exatamente as mesmas 30 issues do 14B: o filtro sempre restringia a execução por baixo dos panos. Os scripts já foram atualizados (depois da execução) para apontar direto para `data/sample_30_underspecified.csv`, deixando isso explícito e removendo a dependência desse arquivo lateral — mas rodar o Passo 4 primeiro continua necessário de qualquer forma, para que o `interact_run_infer.py` (e o próprio `evaluation/benchmarks/swe_bench/config.toml`) funcionem.
+**Nota importante:** esse `evaluation/benchmarks/swe_bench/config.toml` gerado aqui não é o mesmo arquivo do `config.toml` da raiz do repositório (que guarda os LLMs) — é um arquivo local, **não versionado no git**, lido pela função `filter_dataset()` em `interact_run_infer.py`. Ela sempre procura esse arquivo e, se ele existir com uma chave `selected_ids`, filtra **qualquer** dataset carregado para as mesmas 30 instâncias. Foi por isso que, na execução original, os scripts do 7B/32B (que ainda apontavam `--dataset` para `princeton-nlp/SWE-bench_Lite`) acabaram avaliando exatamente as mesmas 30 issues do 14B: o filtro sempre restringia a execução por baixo dos panos.
+
+**Atenção — `--dataset` vs `--csv_file`:** o argumento `--dataset` do `interact_run_infer.py` é usado **apenas como rótulo** para nomear a pasta de saída — ele não carrega dado nenhum. Quem de fato carrega os dados é `--csv_file`, cujo default é `evaluation/benchmarks/swe_bench/data/full_summaries_verified.xlsx` (um dataset bem maior que as 30 issues). Ou seja, sem `--csv_file` explícito, a única coisa que garantia rodar as 30 instâncias certas era o filtro `selected_ids` acima existir na máquina — se o Passo 4 não tiver sido rodado (por exemplo, numa droplet nova), a avaliação roda silenciosamente sobre o dataset grande errado. Por isso os scripts de bateria agora passam **tanto** `--dataset` (rótulo/nome da pasta) **quanto** `--csv_file` (carregamento real) apontando para `data/sample_30_underspecified.csv`, tornando a amostra correta garantida mesmo sem o arquivo de filtro lateral — mas rodar o Passo 4 primeiro continua necessário de qualquer forma, para que `data/sample_30_underspecified.csv` exista.
 
 ### Passo 5: Execução
 Os scripts em `baterias/<escala>/` rodam as sessões de cada configuração (recebendo automaticamente a amostra de 30 instâncias gerada no Passo 4).
@@ -141,6 +143,15 @@ bash reproducao/baterias/7b/run_gpt.sh
 ```bash
 bash reproducao/baterias/7b/run_gemini.sh
 ```
+
+**Onde os resultados ficam:** os resultados são gravados incrementalmente (cada instância é salva e recebe `flush()` assim que termina, então cancelar no meio da execução não perde o que já rodou) em:
+```
+evaluation/evaluation_outputs/outputs/data__sample_30_underspecified.csv-test/CodeActAgent/Qwen2.5-Coder-7B-Instruct-4bit_maxiter_5_N_v0.20.0-no-hint-gemini-flash-latest-7B-run_1/
+```
+(pra `run_gpt.sh`, troque o final por `..._v0.20.0-no-hint-gpt-4o-mini-7B-run_1/`). Dentro dessa pasta:
+- `output.jsonl` — resultado principal, uma linha por instância já concluída
+- `llm_completions/<instance_id>/*.json` — logs brutos de cada chamada ao LLM
+- `logs/` — logs de execução
 
 ### Passo 6: Ambiente de análise
 As etapas de métricas, verificação e validação usam um ambiente Python separado do OpenHands (testado em Python 3.10). A partir da raiz do repositório:
