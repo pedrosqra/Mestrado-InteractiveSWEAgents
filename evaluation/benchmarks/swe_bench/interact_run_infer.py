@@ -141,9 +141,10 @@ def get_instruction(instance: pd.Series, metadata: EvalMetadata):
             f'{instance.problem_statement}\n'
             '--- END ISSUE ---\n\n'
         )
-        if USE_HINT_TEXT and instance.hints_text:
+        hints_text = getattr(instance, 'hints_text', '')
+        if USE_HINT_TEXT and hints_text:
             instruction += (
-                f'--- BEGIN HINTS ---\n{instance.hints_text}\n--- END HINTS ---\n'
+                f'--- BEGIN HINTS ---\n{hints_text}\n--- END HINTS ---\n'
             )
         instruction += CODEACT_SWE_PROMPT.format(workspace_dir_name=workspace_dir_name)
     else:
@@ -479,13 +480,13 @@ def process_instance(
 ) -> EvalOutput:
     config = get_config(instance, metadata)
     global fake_user
-    original_issue = instance.original_issue
+    original_issue = getattr(instance, 'original_issue', instance.get('problem_statement', ''))
     issue = str(original_issue)
     simulator_model = metadata.details.get('simulator_model') if metadata.details else None
     fake_user = FakeUser(
         issue=issue,
-        hints=instance.hints_text,
-        files=instance.files,
+        hints=getattr(instance, 'hints_text', ''),
+        files=getattr(instance, 'files', ''),
         simulator_model=simulator_model,
     )
     # Setup the logger properly, so you can run multi-processing to parallelize the evaluation
@@ -641,11 +642,12 @@ if __name__ == '__main__':
     eval_ids = args.eval_ids.split(',') if args.eval_ids else None
     instances = prepare_dataset(swe_bench_tests, output_file, args.eval_n_limit, eval_ids)
 
-    if len(instances) > 0 and not isinstance(
+    if len(instances) > 0 and 'PASS_TO_PASS' in instances and not isinstance(
         instances['PASS_TO_PASS'][instances['PASS_TO_PASS'].index[0]], str
     ):
         for col in ['PASS_TO_PASS', 'FAIL_TO_PASS']:
-            instances[col] = instances[col].apply(lambda x: str(x))
+            if col in instances:
+                instances[col] = instances[col].apply(lambda x: str(x))
 
     run_evaluation(
         instances,
