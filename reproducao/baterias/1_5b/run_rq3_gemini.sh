@@ -3,12 +3,9 @@ MODELS=("qwen_1_5b")
 SIMULATORS=("gemini-flash-latest")
 
 # NOTA (pós-experimento): este valor é repassado ao wrapper interact_run_infer.sh como
-# --dataset (só um rótulo pra nomear a pasta de saída) E como --csv_file (que é quem de fato
-# carrega os dados). Sem --csv_file, o interact_run_infer.py cairia no default
 # (evaluation/benchmarks/swe_bench/data/full_summaries_verified.xlsx, um dataset bem maior) e só
 # ficaria restrito às 30 instâncias da amostra do Passo 4 se o filtro "selected_ids" em
 # evaluation/benchmarks/swe_bench/config.toml (gerado pelo generate_sample.py, não versionado no
-# git) existisse na máquina. Com --csv_file explícito no wrapper, a amostra certa é garantida
 # mesmo sem esse arquivo lateral.
 DATASET_PATH="data/sample_30_underspecified.csv"
 MAX_ITER=5
